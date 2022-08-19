@@ -163,3 +163,26 @@ Index Range Scan, Index Full Scan, Index Unique Scan, Index Skip Scan 등이 있
     - 인덱스에 존재하는 컬럼만 사용해야 합니다. 모든 컬럼을 조회하려면 테이블에 접근해야 하기 때문에 Table Full Scan으로 처리됩니다.
 
 </details>
+
+<details>
+<summary>✍️ 5. SELECT 실행 순서에 대해서 아시나요?</summary>
+<br>
+
+```
+SELECT
+FROM
+WHERE
+GROUP BY
+HAVING COUNT
+ORDER BY
+
+1. FROM에서는 실제 존재하는 테이블인지, SELECT 권한은 있는지 확인하고 데이터 집합을 만듭니다.
+2. WHERE는 FROM에서 만든 데이터 집합을 필터링 합니다.
+3. GROUP BY는 WHERE에서 필터링한 데이터를 그룹화합니다.
+4. HAVING은 GROUP BY에서 집계한 데이터 집합을 다시 필터링합니다.
+5. SELECT는 가져온 레코드에서 어떤 컬럼들을 출력할 것인지 확인합니다.
+6. ORDER BY를 통해 데이터를 정렬합니다.
+   SELECT 이후에 실행되기 때문에 SELECT에서 지정된 alias를 사용할 수 있습니다.
+```
+
+</details>
