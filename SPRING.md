@@ -57,3 +57,106 @@ ApplicationContext는 AOP와 같은 추가 기능을 제공하고 컨테이너�
 의존성 주입은 두 객체 간의 관계를 결정하는 디자인 패턴으로 런타임에 동적으로 인스턴스를 주입하여 클래스 간의 결합도를 낮추고 직접 객체를 생성하는 것 보다 유지보수가 수월합니다.
 
 </details>
+
+<details>
+<summary>✍️ 3. Bean 라이프 사이클에 대해 아는 만큼 설명해주세요.</summary>
+<br>
+
+두 가지 방식을 이용해서 Bean의 라이프 사이클을 관리할 수 있습니다.
+
+- 스프링이 제공하는 특정 인터페이스를 상속받아 빈을 구현합니다.
+- 스프링 설정에서 특정 메서드를 호출하라고 지정합니다.
+
+***Bean 라이프 사이클 개요***
+
+```
+빈 객체 생성
+↓
+빈 프로퍼티 설정
+↓
+BeanNameAware.setBeanName()
+↓
+ApplicationContextAware.setApplicationContext()
+↓
+BeanPostProcess의 초기화 전 처리
+↓ 
+@PostConstruct 메서드
+↓
+InitializingBean.afterPropertiesSet()
+↓
+커스텀 init 메서드
+↓
+BeanPostProcessor의 초기화 후 처리
+↓
+빈 객체 사용
+↓
+@PreDestroy 메서드
+↓
+DisposableBean.destroy()
+↓
+커스텀 destroy 메서드
+```
+
+전체 흐름은 객체 생성/프로퍼티 설정 → 초기화 → 사용 → 소멸의 네 단계를 거치게 됩니다.
+
+Bean의 초기화와 소멸 방법은 각각 세 가지가 존재하며 각 방식이 쌍을 이루어 함께 사용되곤 합니다. @PostConstruct 애너테이션을 사용해서 초기화 메서드를 지정했다면 @PreDestroy 애너테이션을
+사용해서 소멸 메서드를 지정하고 커스텀 init 메서드를 사용했다면 커스텀 destroy 메서드를 사용하는 식입니다.
+
+***InitializingBean 인터페이스와 DisposableBean 인터페이스***
+
+- InitializingBean : Bean의 초기화 과정에서 실행될 메서들을 정의
+- DisposableBean : Bean의 소멸 과정에서 실행될 메서들을 정의
+
+```
+public interface InitializingBean {
+    void afterPropertiesSet() throws Exception;
+}
+
+public interface DisposableBean {
+    void destroy throws Exception;
+}
+```
+
+객체 생성 이외의 추가적인 초기화 과정이 필요하다면 InitializingBean 인터페이스를 상속받고 afterPropertiesSet() 메서드에서 초기화 작업을 수행하면 됩니다.
+
+컨테이너가 종료될 때 객체에 알맞은 처리가 필요하다면 DisposableBean 인터페이스를 상속받아 destroy() 메서드에서 소멸 작업을 수행하면 됩니다.
+
+초기화와 소멸 과정이 필요한 예가 데이터베이스 커넥션 풀 기능입니다. 커넥션 풀은 미리 커넥션을 생성해 두었다가 커넥션이 필요할 때 제공하는 기능이므로 초기화 과정을 필요로 합니다.
+
+더 이상 커넥션이 필요 없으면 생성한 커넥션을 모두 닫기 위한 소멸 과정을 필요로 하고 이런 커넥션 풀 기능을 스프링 Bean으로 사용하고 싶은 경우 InitializingBean 인터페이스와
+DisposableBean 인터페이스를 상속받아 초기화와 소멸 과정을 처리할 수 있습니다.
+
+***@PostConstruct 애너테이션과 @PreDestroy 애너테이션***
+
+모두 자바 표준 패키지의 애너테이션입니다.
+
+InitializingBean 인터페이스와 DisposableBean 인터페이스는 스프링에 종속적이고 메서드의 이름을 변경할 수 없습니다.
+
+외부 라이브러리에도 적용할 수 없기 때문에 @PostConstruct 애너테이션과 @PreDestroy 애너테이션 사용을 권장하고 있습니다.
+
+하지만 외부 라이브러리에 적용하는 경우 코드 수정이 불가능해서 다른 방법을 찾아야 합니다.
+
+***커스텀 init 메서드와 커스텀 destroy 메서드***
+
+```
+import org.springframework.context.annotation.Bean;
+
+@SpringBootApplication
+public class Application {
+    @Bean(initMethod = "init", destroyMethod = "destroy")
+    public ConnectionPool connectionPool() {
+        return new ConnectionPool();
+    }
+    
+    ...
+}
+```
+
+@Bean 애너테이션에 initMethod와 destroyMethod를 설정하여 초기화와 소멸 과정을 처리할 수 있습니다.
+
+메소드의 이름을 자유롭게 변경할 수 있으며 코드에 접근할 수 없는 외부 라이브러리에도 초기화와 종료 메서드를 적용할 수 있습니다.
+
+또한 destroyMethod에는 inferred라는 추론 기능이 있는데 일반적으로 종료 메서드의 이름으로 close 또는 shutdown을 많이 이용하기 때문에 close 또는 shutdown 함수가 존재하면 이를
+소멸 메서드로 인식하여 호출합니다. 이러한 추론 기능을 사용하고 싶지 않으면 destroyMethod="" 처럼 공백으로 지정하면 됩니다.
+
+</details>
