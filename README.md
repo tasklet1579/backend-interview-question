@@ -4,4 +4,5 @@
 2. ✍️ [Spring](SPRING.md)
 3. ✍️ [JPA](JPA.md)
 4. ✍️ [Database](DATABASE.md)
-5. ✍️ Etc
+5. ✍️ [Network](NETWORK.md)
+6. ✍️ Etc
