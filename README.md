@@ -5,4 +5,4 @@
 3. ✍️ [JPA](JPA.md)
 4. ✍️ [Database](DATABASE.md)
 5. ✍️ [Network](NETWORK.md)
-6. ✍️ Etc
+6. ✍️ [Etc](ETC.md)
