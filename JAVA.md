@@ -51,3 +51,44 @@ Java
 클래스를 바탕으로 객체를 소프트웨어에 실체화하면 그것이 인스턴스가 되고 이 과정을 인스턴스화라고 합니다. 실체화된 인스턴스는 메모리에 할당됩니다.
 
 </details>
+
+<details>
+<summary>✍️ 3. Boxing과 Unboxing이 무엇인지 설명해주세요.</summary>
+<br>
+
+자바는 기본 타입 (byte, char, short, int, long, float, double, boolean)의 값을 갖는 객체를 생성할 수 있다.
+
+이러한 객체를 Wrapper 객체라고 하는데, 기본 타입의 값을 내부에 두고 포장하기 때문이다.
+
+기본 타입의 값은 변경할 수 없고 변경하고 싶다면 새로운 Wrapper 객체를 생성해야 한다.
+
+Wrapper 클래스는 java.lang 패키지에 포함되어 있는데, 다음과 같이 기본 타입에 대응되는 클래스들이 있다.
+
+|기본 타입|Wrapper 클래스|
+|---|---|
+|byte|Byte|
+|char|Character|
+|short|Short|
+|int|Integer|
+|long|Long|
+|float|Float|
+|double|Double|
+|boolean|Boolean|
+
+기본 타입의 값을 Wrapper 객체로 만드는 과정을 Boxing이라고 하고, Wrapper 객체에서 기본 타입의 값을 얻어내는 과정을 Unboxing이라고 한다.
+
+기본 타입의 값을 직접 Boxing, Unboxing하지 않아도 자동으로 일어나는 경우가 있는데 자동 Boxing은 기본 값이 대입될 경우에 발생하고 힙 영역에 Wrapper 객체가 생성된다.
+
+자동 Unboxing은 기본 타입에 Wrapper 객체가 대입될 경우에 발생하고 Java 1.5부터 추가된 기능이기 때문에 1.4 이전 버전에서는 직접 Boxing과 Unboxing을 해주어야 한다.
+
+Wrapper 객체는 내부의 값을 비교하기 위해 ==와 != 연산자를 사용할 수 없다. 이 연산자는 내부의 값을 비교하는 것이 아니라 Wrapper 객체의 참조를 비교하기 때문이다.
+
+내부의 값만 비교하려면 Unboxing한 값을 얻어 비교해야는데 ==와 != 연산자로 내부의 값을 비교할 수 있는 값이 있다.
+
+|타입|값의 범위|
+|---|---|
+|boolean|true, false|
+|char|\u0000 ~ \u007f|
+|byte, short, int|-128 ~ 127|
+
+</details>
