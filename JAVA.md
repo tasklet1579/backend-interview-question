@@ -227,3 +227,73 @@ main 메서드가 위치한 클래스를 로드하고 실행 엔진으로 바이
     - IBM은 한번 컴파일된 네이티브 코드를 공유 캐시를 통해 JVM이 사용하도록 한다. 이미 컴파일된 코드는 다른 JVM에서도 컴파일하지 않고 사용할 수 있게 하는 것이다.
 
 </details>
+
+<details>
+<summary>✍️ 6. Garbage Collector에 대해서 설명해주세요.</summary>
+<br>
+
+가비지 컬렉터는 힙 영역에 있지만 현재는 참조되고 있지 않는 인스턴스들을 찾아서 제거하고 사용되지 않는 메모리 공간을 회수한다.
+
+이는 다음의 두 과정을 거친다.
+
+1. Mark : GC가 참조되지 않는 인스턴스들을 찾아서 mark한다.
+2. Sweep : GC가 mark된 인스턴스들을 힙 영역으로부터 정리한다.
+
+GC는 JVM에 의해 간격을 두고 자동으로 동작하는데 System.gc()를 통해 명시적으로 호출하는 방법도 있지만 이는 즉시 동작을 보장하진 않는다.
+
+또한 JVM은 GC를 수행할 때, 이를 실행하는 쓰레드 이외에는 작업을 중단하게 되므로 명시적인 호출은 지양해야 한다.
+
+**메모리 구성**
+
+Metaspace
+
+- 자바 8에서 PermGen이 사라지고 Metaspace가 이를 대체하게 되었는데 PermGen은 자바 7까지 클래스의 메타데이터를 저장하던 영역이었고 Heap의 일부였다.
+    - Permanent Generation은 힙 영역 중에 하나로 자바 애플리케이션을 실행할때 클래스의 메타데이터를 저장하는 영역이다. (자바 7기준)
+    - 아래와 같은 것들이 Java Heap이나 native heap 영역으로 이동했다.
+        - Symbols -> native heap
+        - Interned String -> Java Heap
+        - Class statics -> Java Heap
+    - OutOfMemoryError: PermGen Space error는 더이상 볼 수 없고 PermSize 와 MaxPermSize는 더이상 사용할 필요가 없다. 이 대신에 MetaspaceSize 및
+      MaxMetaspaceSize가 새롭게 사용되게 되었다.
+
+Heap - Old & Young (Eden, Survivor)
+
+- Heap은 Young Generation, Old Generation으로 크게 두개의 영역으로 나뉘고 Young Generation은 Eden, Survivor Space 0, 1로 세분화 된다.
+
+**가비지 컬렉션 프로세스**
+
+1. 새로운 인스턴스는 Eden 영역에 할당된다.
+2. Eden 영역이 가득차면, MinorGC가 발생한다.
+3. MinorGC가 발생하면, Reachable 인스턴스들은 S0으로 옮겨지고 Unreachable 인스턴스들은 Eden 영역에서 제거된다.
+4. 다음 MinorGC가 발생할때, Eden 영역에는 3번과 같은 과정이 발생한다. 기존에 S0에 있었던 인스턴스들은 S1으로 옮겨지는데 이때 age 값이 증가된다.
+5. 다음 MinorGC가 발생하면, 4번 과정이 반복되는데, S1이 가득차 있으므로 인스턴스들은 S0으로 옮겨지면서 age 값이 증가된다.
+6. Young Generation에서 계속해서 살아남으며 age 값이 특정값 이상이 되면 Old Generation으로 옮겨진다.
+7. 6번 과정이 계속해서 반복되면서 Old Generation이 가득차게 되면 MajorGC 가 발생한다.
+
+**가비지 컬렉터 종류**
+
+Serial GC
+
+- 자바 5, 6에서 사용되는 GC
+    - MinorGC, MajorGC 모두 순차적으로 실행된다.
+    - Mark-Compact collection method를 사용한다.
+        - 새로운 메모리 할당을 빠르게 하기 위해서 기존의 메모리에 있던 인스턴스들을 힙의 시작위치로 옮겨 놓는 방법이다.
+
+Parallel GC
+
+- 자바 8에서 사용되는 GC
+- Young Generation에 대한 GC 수행시 멀티스레드를 사용한다.
+- 스레드 개수는 디폴트로 CPU 개수만큼이 할당되는데 옵션을 사용한다면 Old Generation의 GC에서도 멀티스레딩을 활용할 수 있다.
+
+Concurrent Mark Sweep (CMS) Collector
+
+- GC 작업을 애플리케이션 스레드와 동시에 수행함으로써 GC로 인한 stop-the-world 시간을 최소화 한다.
+- Young Generation에 GC 수행시 Parallel GC와 같은 알고리즘을 사용하지만 압축 작업을 하지 않는다.
+- 일반적으로 CMS 컬렉터는 살아있는 인스턴스들에 대한 압축작업을 수행하지 않으므로, 메모리의 파편화가 문제가 된다면 더 큰 힙 사이즈를 할당해야 한다.
+
+G1 Garbage Collector
+
+- 자바 7부터 사용 가능하며 자바 9에서 사용되는 GC
+- 대용량 메모리 공간이 있는 멀티 프로세서 시스템에서 실행되는 응용 프로그램을 위해 만들어졌다.
+
+</details>
