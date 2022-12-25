@@ -92,3 +92,71 @@ Wrapper 객체는 내부의 값을 비교하기 위해 ==와 != 연산자를 사
 |byte, short, int|-128 ~ 127|
 
 </details>
+
+<details>
+<summary>✍️ 4. IntegerCache 클래스가 무엇인지 설명해주세요.</summary>
+<br>
+
+```
+package java.lang;
+
+public final class Integer extends Number implements Comparable<Integer> {
+    ...
+  
+    private static class IntegerCache {
+        static final int low = -128;
+        static final int high;
+        static final Integer cache[];
+  
+        static {
+            // high value may be configured by property
+            int h = 127;
+            String integerCacheHighPropValue =
+                sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+            if (integerCacheHighPropValue != null) {
+                try {
+                    int i = parseInt(integerCacheHighPropValue);
+                    i = Math.max(i, 127);
+                    // Maximum array size is Integer.MAX_VALUE
+                    h = Math.min(i, Integer.MAX_VALUE - (-low) -1);
+                } catch( NumberFormatException nfe) {
+                    // If the property cannot be parsed into an int, ignore it.
+                }
+            }
+            high = h;
+  
+            cache = new Integer[(high - low) + 1];
+            int j = low;
+            for(int k = 0; k < cache.length; k++)
+                cache[k] = new Integer(j++);
+  
+            // range [-128, 127] must be interned (JLS7 5.1.7)
+            assert IntegerCache.high >= 127;
+        }
+  
+        private IntegerCache() {}
+    }
+    
+    public static Integer valueOf(int i) {
+        if (i >= IntegerCache.low && i <= IntegerCache.high)
+            return IntegerCache.cache[i + (-IntegerCache.low)];
+        return new Integer(i);
+    }
+    
+    private final int value;
+    
+    public Integer(int value) {
+        this.value = value;
+    }
+    
+    ...
+}
+```
+
+Integer 클래스 내부에는 primitive type인 int 변수와 IntegerCache 클래스가 존재한다.
+
+IntegerCache에는 -128에서 127 사이의 값이 캐싱되어 있기 때문에 Integer 변수에 해당 범위의 값이 Auto Boxing되면 기존에 생성해둔 값을 반환한다.
+
+그렇기 때문에 ==와 != 연산자로 내부의 값을 비교할 수 있고 128 이상의 값을 저장하기 위해서선 -XX:AutoBoxCacheMax=size 옵션을 사용하면 된다.
+
+</details>
